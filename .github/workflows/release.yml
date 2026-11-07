@@ -1,0 +1,71 @@
+name: Release verified packages
+on:
+  push:
+    tags: ['v*']
+permissions:
+  contents: read
+# Do not overlap publication attempts for the same release ref.
+concurrency:
+  group: release-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  validate:
+    uses: ./.github/workflows/ci.yml
+  package:
+    needs: validate
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-24.04
+            target: linux-x64
+          - os: windows-2022
+            target: windows-x64
+          - os: macos-15
+            target: macos-arm64
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+      - run: cmake --build build --config Release --parallel 2
+      - run: ctest --test-dir build --build-config Release --output-on-failure
+      - run: cmake --install build --config Release --prefix stage
+      - name: Installed-layout oracle and native package
+        shell: bash
+        run: |
+          set -euo pipefail
+          bin=stage/bin/mountlens
+          if [[ "$RUNNER_OS" == "Windows" ]]; then bin=stage/bin/mountlens.exe; fi
+          python tests/integration.py "$bin" stage/examples
+          python tools/package.py stage '${{ matrix.target }}' "${GITHUB_REF_NAME#v}"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: package-${{ matrix.target }}
+          path: dist/mountlens-*-${{ matrix.target }}.*
+          if-no-files-found: error
+  publish:
+    needs: package
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
+        with:
+          pattern: package-*
+          path: release-assets
+          merge-multiple: true
+      - name: Hash and publish tested preview
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          (cd release-assets && sha256sum mountlens-* > SHA256SUMS.txt)
+          python .github/scripts/release_checksums.py release-assets
+          python .github/scripts/release_guard.py release-assets
+          gh release create "$GITHUB_REF_NAME" release-assets/mountlens-* release-assets/SHA256SUMS.txt --title "Rudy MountLens $GITHUB_REF_NAME" --notes-file docs/RELEASE.md --prerelease

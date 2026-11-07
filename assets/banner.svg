@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 300" role="img" aria-labelledby="title">
+  <title id="title">Rudy MountLens · Mount namespace evidence</title>
+  <rect width="1200" height="300" rx="18" fill="#0c121a"/>
+  <path d="M2 0v300" stroke="#55e0b6" stroke-width="5"/>
+  <g fill="#55e0b6" font-family="monospace" font-size="15" letter-spacing="3">
+    <text x="55" y="54">RUDY SYSTEMS / NAMESPACE INSPECTION</text>
+    <text x="55" y="260">C11 / OFFLINE / DEVELOPER PREVIEW</text>
+  </g>
+  <text x="55" y="125" fill="#edf6ff" font-family="system-ui,sans-serif" font-size="58" font-weight="700">Rudy MountLens</text>
+  <text x="57" y="178" fill="#a7c5dc" font-family="system-ui,sans-serif" font-size="25">Compare mount stacks and restrictions.</text>
+  <path d="M55 222h1090" stroke="#26394b"/>
+  <g fill="#132332" stroke="#2f4c60" stroke-width="2">
+    <path d="M950 92v29m0 0-92 32m92-32 92 32" fill="none"/>
+    <rect x="880" y="65" width="140" height="34" rx="6"/>
+    <rect x="788" y="145" width="140" height="34" rx="6"/>
+    <rect x="972" y="145" width="140" height="34" rx="6"/>
+  </g>
+  <g fill="#55e0b6" font-family="monospace" font-size="13" text-anchor="middle">
+    <text x="950" y="87">MOUNT GRAPH</text>
+    <text x="858" y="166">STACKS</text>
+    <text x="1042" y="166">RESTRICTIONS</text>
+  </g>
+</svg>

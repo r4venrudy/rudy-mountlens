@@ -1,0 +1,4 @@
+/build*/
+/stage*/
+/dist/
+__pycache__/

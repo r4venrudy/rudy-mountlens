@@ -1,0 +1,53 @@
+name: Build and verify
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_call:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.ref || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-24.04
+            mode: gcc
+            sanitize: 'OFF'
+          - os: windows-2022
+            mode: msvc
+            sanitize: 'OFF'
+          - os: macos-15
+            mode: clang
+            sanitize: 'OFF'
+          - os: ubuntu-24.04
+            mode: clang-asan-ubsan
+            sanitize: 'ON'
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Select sanitizer compiler
+        if: matrix.sanitize == 'ON'
+        shell: bash
+        run: |
+          echo 'CC=clang' >> "$GITHUB_ENV"
+          echo 'CXX=clang++' >> "$GITHUB_ENV"
+      - run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DMOUNTLENS_SANITIZE=${{ matrix.sanitize }}
+      - run: cmake --build build --config Release --parallel 2
+      - name: Mount graph fixtures and independent namespace oracle
+        env:
+          ASAN_OPTIONS: detect_leaks=1:halt_on_error=1
+          UBSAN_OPTIONS: halt_on_error=1:print_stacktrace=1
+        run: ctest --test-dir build --build-config Release --output-on-failure -V
+
+      - name: Read a live Linux mount namespace
+        if: runner.os == 'Linux'
+        run: build/mountlens inspect /proc/self/mountinfo > /dev/null

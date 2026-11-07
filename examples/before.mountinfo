@@ -1,0 +1,7 @@
+10 900 8:1 / / rw,relatime shared:7 - ext4 /dev/vda1 rw,errors=remount-ro
+20 10 8:1 /srv-lower /srv ro,nosuid shared:7 - ext4 /dev/vda1 rw
+21 20 0:45 / /srv rw,nosuid,nodev,noexec - tmpfs tmpfs ro,size=65536k
+30 10 0:46 / /shared\040media rw,nosuid,nodev shared:12 master:7 - tmpfs tmpfs rw
+40 10 0:47 / /archive ro,nodev - tmpfs tmpfs rw
+50 10 0:48 / /review rw,nodev - tmpfs tmpfs rw
+51 10 0:49 / /review ro,nodev - tmpfs tmpfs rw
