@@ -134,6 +134,9 @@ static int optional(ml_mount *mount, const char *field)
     } else if (!strcmp(field, "unbindable")) {
         if (mount->propagation & ML_UNBINDABLE) return 0;
         mount->propagation |= ML_UNBINDABLE;
+    } else if (!strcmp(field, "shared") || !strcmp(field, "master") ||
+               !strcmp(field, "propagate_from") || !strncmp(field, "unbindable:", 11)) {
+        return 0;
     }
     return !value || (!*value && number(data, value) && *value != 0);
 }
