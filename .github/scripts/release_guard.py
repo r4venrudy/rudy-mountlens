@@ -174,7 +174,8 @@ def verify(path):
                     raise ValueError('ZIP member references another disk')
                 validate_zip_metadata(archive, member)
                 validate_descriptor(archive, member)
-                if member.flag_bits&1:raise ValueError('encrypted release member')
+                if member.flag_bits & 0x2041:  # traditional, strong, or masked header
+                    raise ValueError('encrypted release member')
                 kind=stat.S_IFMT(member.external_attr>>16) if member.create_system==3 else 0
                 if member.is_dir() and (member.file_size or kind==stat.S_IFREG):
                     raise ValueError('invalid ZIP directory payload or type')
