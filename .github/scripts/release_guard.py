@@ -228,6 +228,7 @@ def verify(path):
                     raise ValueError('invalid ZIP directory payload or type')
                 if not member.is_dir() and kind==stat.S_IFDIR:
                     raise ValueError('ZIP directory lacks a trailing slash')
+            for member in members:
                 has_file_payload |= not member.is_dir() and member.file_size>0
                 with archive.open(member) as stream:consume(stream,member.file_size)
     elif path.name.endswith(('.tar.gz','.tgz','.tar.xz')):
